@@ -56,7 +56,8 @@ const getTasks = async (req, res) => {
     const tasks = await taskModel
       .find({ user: userobjid })
       .populate("user", "name _id ")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     return res.status(200).json({
       error: false,
@@ -74,7 +75,7 @@ const getTasks = async (req, res) => {
 };
 
 // Get Task by ID
-const getbyID = async (req, res) => {
+const getTaskById = async (req, res) => {
   try {
     const taskId = req.params.id;
     const userId = req.userId;
@@ -83,11 +84,10 @@ const getbyID = async (req, res) => {
       return res.status(400).json({ error: true, message: "Invalid task ID" });
     }
 
-    const userobjid = new mongoose.Types.ObjectId(userId);
-
     const task = await taskModel
-      .findOne({ _id: taskId, user: userobjid })
-      .populate("user", "name _id");
+      .findOne({ _id: taskId, user: userId })
+      .populate("user", "name _id")
+      .lean();
 
     if (!task) {
       return res.status(404).json({ error: true, message: "Task not found" });
@@ -114,7 +114,6 @@ const updateTask = async (req, res) => {
     const taskId = req.params.id;
     const userId = req.userId;
     const { title, description, status } = req.body;
-    const userobjid = new mongoose.Types.ObjectId(userId);
 
     if (!mongoose.Types.ObjectId.isValid(taskId)) {
       return res.status(400).json({ error: true, message: "Invalid task ID" });
@@ -122,16 +121,15 @@ const updateTask = async (req, res) => {
 
     const updatedTask = await taskModel
       .findOneAndUpdate(
-        { _id: taskId, user: userobjid },
+        { _id: taskId, user: userId },
         { title, description, status },
         { new: true, runValidators: true }
       )
-      .populate("user", "name _id");
+      .populate("user", "name _id")
+      .lean();
 
     if (!updatedTask) {
-      return res
-        .status(404)
-        .json({ error: true, message: "Task not found or unauthorized" });
+      return res.status(404).json({ error: true, message: "Task not found " });
     }
 
     return res.status(200).json({
@@ -150,22 +148,21 @@ const updateTask = async (req, res) => {
 };
 
 //  Delete Task
-const deletetask = async (req, res) => {
+const deleteTask = async (req, res) => {
   try {
-    const taskId = req.params.id;
+    const { id: taskId } = req.params;
     const userId = req.userId;
-    const userobjid = new mongoose.Types.ObjectId(userId);
 
     if (!mongoose.Types.ObjectId.isValid(taskId)) {
       return res.status(400).json({ error: true, message: "Invalid task ID" });
     }
 
-    const deletedTask = await taskModel.findOneAndDelete({
+    const task = await taskModel.findOneAndDelete({
       _id: taskId,
-      user: userobjid,
+      user: userId,
     });
 
-    if (!deletedTask) {
+    if (!task) {
       return res
         .status(404)
         .json({ error: true, message: "Task not found or unauthorized" });
@@ -180,7 +177,6 @@ const deletetask = async (req, res) => {
     return res.status(500).json({
       error: true,
       message: "Internal server error",
-      detail: error.message,
     });
   }
 };
@@ -188,7 +184,7 @@ const deletetask = async (req, res) => {
 module.exports = {
   createTask,
   getTasks,
-  getbyID,
+  getTaskById,
   updateTask,
-  deletetask,
+  deleteTask,
 };

@@ -8,8 +8,8 @@ const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    const emailcheck = await UserModel.findOne({ email });
-    const nameCheck = await UserModel.findOne({ name });
+    const emailcheck = await UserModel.findOne({ email }).lean();
+    const nameCheck = await UserModel.findOne({ name }).lean();
 
     if (emailcheck || nameCheck) {
       return res.status(401).json({
@@ -60,41 +60,40 @@ const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await UserModel.findOne({ email: email });
-
-    if (user === null) {
+    const user = await UserModel.findOne({ email });
+    if (!user) {
       return res.status(401).json({
         error: true,
-        message: "Name or Password is incorrect",
+        message: "Email or password is incorrect",
       });
     }
 
-    const checkPassword = await bcrypt.compare(password, user.password);
-
-    if (checkPassword === false) {
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
       return res.status(401).json({
         error: true,
-        message: "Name or Password is incorect",
+        message: "Email or password is incorrect",
       });
     }
 
-    const accessToken = await jwt.sign(
-      { userid: user._id },
+    const accessToken = jwt.sign(
+      { userId: user._id },
       process.env.SECURITY_KEY,
       { expiresIn: "3h" }
     );
 
+    const { password: _, ...userData } = user._doc;
+
     res.status(200).json({
       error: false,
-      message: "successfully login",
-      user: user,
-      Token: accessToken,
+      message: "Login successful",
+      user: userData,
+      token: accessToken,
     });
   } catch (error) {
-    console.log(error.message);
     res.status(500).json({
       error: true,
-      message: "internal server error",
+      message: "Internal server error",
     });
   }
 };

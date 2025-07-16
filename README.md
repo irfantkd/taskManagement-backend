@@ -74,6 +74,7 @@ This API allows users to:
 | ------ | -------------------- | ------------------- |
 | POST   | `/api/auth/register` | Register a new user |
 | POST   | `/api/auth/login`    | Login and get token |
+| POST   | `/api/auth/verify`   | Verify user token   |
 
 #### 📌 Example Request (Register)
 
@@ -100,18 +101,18 @@ POST /api/auth/register
 
 ### 📋 Task Routes (Protected)
 
-| Method | Endpoint        | Description        |
-| ------ | --------------- | ------------------ |
-| POST   | `/api/task/`    | Create a new task  |
-| GET    | `/api/task/`    | Get all user tasks |
-| GET    | `/api/task/:id` | Get task by ID     |
-| PUT    | `/api/task/:id` | Update task by ID  |
-| DELETE | `/api/task/:id` | Delete task by ID  |
+| Method | Endpoint               | Description        |
+| ------ | ---------------------- | ------------------ |
+| POST   | `/api/task/create`     | Create a new task  |
+| GET    | `/api/task/get`        | Get all user tasks |
+| GET    | `/api/task/get:id`     | Get task by ID     |
+| PUT    | `/api/task/update/:id` | Update task by ID  |
+| DELETE | `/api/task/delete/:id` | Delete task by ID  |
 
 #### 📌 Example Request (Create Task)
 
 ```json
-POST /api/task
+POST /api/task/create
 Authorization: Bearer jwt_token_here
 {
   "title": "Complete MERN Project",

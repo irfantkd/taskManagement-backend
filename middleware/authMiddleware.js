@@ -12,7 +12,7 @@ const AuthCheck = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.SECURITY_KEY);
-    req.userId = decoded.userid;
+    req.userId = decoded.userId;
     next();
   } catch (error) {
     return res.status(401).json({
