@@ -11,7 +11,9 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cors());
-
+app.get("/", (req, res) => {
+  res.send("Hello!");
+});
 app.use("/api/task", taskRoutes);
 app.use("/api/auth", authRoutes);
 
